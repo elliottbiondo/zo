@@ -1,4 +1,4 @@
-Oerview
+Overview
 --------
 
 This is a barebones reference management system intended to be used in
@@ -57,3 +57,7 @@ that have been append to the local refs.bib and also any citations that were
 not found in either ref.bib file. If a local refs.bib is not found a new one
 will be printed using the same process.
 
+Contributing
+------------
+
+I am unlikely to accept pull requests because this project is intended to be for my personal use only.
