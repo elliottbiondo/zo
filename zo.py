@@ -1,3 +1,4 @@
+#!/bin/env python
 import fnmatch, re, sys
 from os import walk, path, getenv
 
