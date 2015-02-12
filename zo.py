@@ -2,7 +2,7 @@
 import fnmatch, re, sys
 from os import walk, path, getenv
 
-def make():
+def make(parent):
     tex_files = set()
     for root, dirnames, filenames in walk('.'):
         for filename in fnmatch.filter(filenames, '*.tex'):
@@ -29,7 +29,7 @@ def make():
     missing_refs = all_cites - existing_refs
     append_string = ""
     added_refs = set()
-    with open(path.join(getenv("HOME"), "refs", "refs.bib"), 'r') as f:
+    with open(parent, 'r') as f:
         line = f.readline()
         while line != "":
             if line.strip() != "" and line.strip()[0] == '@' \
@@ -75,16 +75,13 @@ def status():
             if line[0] == '@':
                 refs.add(line.split('{')[1].split(',')[0])
     
-    print("\nfiles that are good to go:")
-    print("==============================")
+    print("\nfiles that are good to go:\n==============================")
     for x in (files & refs):
         print(x)
-    print("\nfiles missing .bib entries:")
-    print("==============================")
+    print("\nfiles missing .bib entries:\n==============================")
     for x in (files - refs):
         print(x)
-    print("\n.bib entries missing files:")
-    print("==============================")
+    print("\n.bib entries missing files:\n==============================")
     for x in (refs - files):
         print(x)
 
@@ -93,8 +90,11 @@ def main():
        raise ValueError("'zo status' and 'zo make' are the only valid commands")
    if sys.argv[1] == 'status':
        status()
+   parent = path.join(getenv("HOME"), "refs", "refs.bib")
+   if len(sys.argv) == 4 and sys.argv[2] in ("--parent", "-p"):
+       parent = sys.argv[3]
    if sys.argv[1] == 'make':
-       make()
+       make(parent)
 
 if __name__ == '__main__':
     main()
