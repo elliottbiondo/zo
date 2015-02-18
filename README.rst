@@ -57,6 +57,16 @@ that have been append to the local refs.bib and also any citations that were
 not found in either ref.bib file. If a local refs.bib is not found a new one
 will be printed using the same process.
 
+There is one more option:
+
+>> zo make --parent /path/to/refs.bib
+
+or
+
+>> zo make -p /path/to/refs.bib
+
+which can be used if for some reason you want use a different refs.bib file as a parent.
+
 Contributing
 ------------
 

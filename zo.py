@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import fnmatch, re, sys
+import fnmatch, sys
 from os import walk, path, getenv
 
 def make(parent):
@@ -11,14 +11,11 @@ def make(parent):
     all_cites = set()
     for tex_file in tex_files:
        with open(tex_file, 'r') as f:
-           for line in f.readlines():
-               if "\\cite{" in line:
-                  for m in re.finditer("\\cite{", line):
-                      idx = m.end()
-                      while line[idx] != "}":
-                          idx += 1
-                      all_cites.add(line[m.end():idx])
-    
+          all_lines = "".join(line.strip() for line in f)
+          for b in all_lines.split("\cite{")[1:]:
+              for c in b.split("}")[0].split(","):
+                  all_cites.add(c.strip())
+
     existing_refs = set()
     if path.exists("refs.bib"):
         with open("refs.bib", 'r') as f:
