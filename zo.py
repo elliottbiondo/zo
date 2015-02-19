@@ -52,14 +52,14 @@ def make(parent):
      
     if len(added_refs) > 0:               
         print("The following refs were added to the local refs.bib:")
-        print("====================================================================")
+        print("="*68)
         for i, ar in enumerate(added_refs):
             print("{0}. {1}".format(i+1, ar))
         if len(missing_refs) > 0:
             print("")
     if len(missing_refs) > 0:
         print("Refs not in parent refs.bib and were NOT added to the local refs.bib:")
-        print("=========================================================================")
+        print("="*73)
         for i, mr in enumerate(missing_refs):
             print("{0}. {1}".format(i+1, mr))
 
