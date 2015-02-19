@@ -14,7 +14,8 @@ def make(parent):
           all_lines = "".join(line.strip() for line in f)
           for b in all_lines.split("\cite{")[1:]:
               for c in b.split("}")[0].split(","):
-                  all_cites.add(c.strip())
+                  if c:
+                      all_cites.add(c.strip())
 
     existing_refs = set()
     if path.exists("refs.bib"):
