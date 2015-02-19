@@ -30,7 +30,7 @@ def make(parent):
         line = f.readline()
         while line != "":
             if line.strip() != "" and line.strip()[0] == '@' \
-                and line.split('{')[1].split(',')[0] in missing_refs:
+                and line.split('{')[1].split(',')[0].strip() in missing_refs:
                 ref = line.split('{')[1].split(',')[0] 
                 missing_refs.remove(ref)
                 added_refs.add(ref)
@@ -70,7 +70,7 @@ def status():
     with open(path.join(getenv("HOME"), "refs", "refs.bib"), 'r') as f:
         for line in f.readlines():
             if line[0] == '@':
-                refs.add(line.split('{')[1].split(',')[0])
+                refs.add(line.split('{')[1].split(',')[0].strip())
     
     print("\nfiles that are good to go:\n==============================")
     for x in (files & refs):
