@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import fnmatch, sys
+import fnmatch, sys, warnings
 from os import walk, path, getenv
 
 def make(parent):
@@ -14,7 +14,10 @@ def make(parent):
           all_lines = "".join(line.strip() for line in f)
           for b in all_lines.split("\cite{")[1:]:
               for c in b.split("}")[0].split(","):
-                  all_cites.add(c.strip())
+                  if c:
+                      all_cites.add(c.strip())
+                  else:
+                      warnings.warn("Empty citation encountered.", Warning)
 
     existing_refs = set()
     if path.exists("refs.bib"):
