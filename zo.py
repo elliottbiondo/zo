@@ -31,7 +31,7 @@ def make(parent):
         while line != "":
             if line.strip() != "" and line.strip()[0] == '@' \
                 and line.split('{')[1].split(',')[0].strip() in missing_refs:
-                ref = line.split('{')[1].split(',')[0] 
+                ref = line.split('{')[1].split(',')[0].strip() 
                 missing_refs.remove(ref)
                 added_refs.add(ref)
                 append_string += line
