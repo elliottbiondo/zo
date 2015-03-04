@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import fnmatch, sys, warnings
-from os import walk, path, getenv
+from os import walk, path, getenv, system
 
 def make(parent):
     tex_files = set()
@@ -85,11 +85,17 @@ def status():
     for x in (refs - files):
         print(x)
 
+def grep(args):
+    print(" ".join(args))
+    system('find ~/refs/ -name "*.pdf" | xargs -I @ pdftotext @ - | grep {0}'. format(" ".join(args)))
+
 def main():
-   if len(sys.argv) < 2 or sys.argv[1] not in ('status', 'make'):
+   if len(sys.argv) < 2 or sys.argv[1] not in ('status', 'make', 'grep'):
        raise ValueError("'zo status' and 'zo make' are the only valid commands")
    if sys.argv[1] == 'status':
        status()
+   if sys.argv[1] == 'grep':
+       grep(sys.argv[2:])
    parent = path.join(getenv("HOME"), "refs", "refs.bib")
    if len(sys.argv) == 4 and sys.argv[2] in ("--parent", "-p"):
        parent = sys.argv[3]
