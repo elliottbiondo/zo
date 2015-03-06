@@ -1,5 +1,8 @@
 #!/usr/bin/env python
-import fnmatch, sys, warnings, argparse
+import fnmatch 
+import sys
+import warnings
+import argparse
 from os import walk, path, getenv, system
 
 def latex_cites(project):
@@ -19,7 +22,8 @@ def latex_cites(project):
     tex_files = set()
     for root, dirnames, filenames in walk(project):
         for filename in fnmatch.filter(filenames, '*.tex'):
-            tex_files.add(path.join(root, filename))
+            if filename[0] != '.':
+                tex_files.add(path.join(root, filename))
     
     cites = set()
     for tex_file in tex_files:
@@ -141,7 +145,6 @@ def status():
         print(x)
 
 def grep(args):
-    print(" ".join(args))
     system('find ~/refs/ -name "*.pdf" | xargs -I @ pdftotext @ - | grep {0}'. format(" ".join(args)))
 
 def main():
