@@ -24,7 +24,7 @@ def make(parent):
         with open("refs.bib", 'r') as f:
             for line in f.readlines():
                 if line[0] == '@':
-                    existing_refs.add(line.split('{')[1].split(',')[0])
+                    existing_refs.add(line.split('{')[1].split(',')[0].strip())
      
     missing_refs = all_cites - existing_refs
     append_string = ""
