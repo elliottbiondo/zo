@@ -1,51 +1,106 @@
 #!/usr/bin/env python
-import fnmatch, sys, warnings
-from os import walk, path, getenv
+import fnmatch, sys, warnings, argparse
+from os import walk, path, getenv, system
 
-def make(parent):
+def latex_cites(project):
+    """Finds the contents of every \cite command in a LaTeX project within
+    a directory, searched recursively.
+
+    Parameters:
+    ----------
+    project : string
+        The name of the directory containing the LaTeX project.
+    
+    Returns:
+    -------
+    cites : set of strings
+        The contents of all cite commands in the project directory.
+    """
     tex_files = set()
-    for root, dirnames, filenames in walk('.'):
+    for root, dirnames, filenames in walk(project):
         for filename in fnmatch.filter(filenames, '*.tex'):
             tex_files.add(path.join(root, filename))
     
-    all_cites = set()
+    cites = set()
     for tex_file in tex_files:
        with open(tex_file, 'r') as f:
-          all_lines = "".join(line.strip() for line in f)
-          for b in all_lines.split("\cite{")[1:]:
+          lines = "".join(line.strip() for line in f)
+          for b in lines.split("\cite{")[1:]:
               for c in b.split("}")[0].split(","):
                   if c:
-                      all_cites.add(c.strip())
+                      cites.add(c.strip())
                   else:
                       warnings.warn("Empty citation encountered.", Warning)
+    return cites
 
-    existing_refs = set()
-    if path.exists("refs.bib"):
-        with open("refs.bib", 'r') as f:
+def bib_nicknames(bib):
+    """Finds all the nicknames in BibTeX .bib file.
+
+    Parameters:
+    -----------
+    bib : str
+        Name of the .bib file
+
+    Returns:
+    --------
+    nicknames : set of strings
+        All nicknames within the .bib file
+    """
+    nicknames = set()
+    if path.exists(bib):
+        with open(bib, 'r') as f:
             for line in f.readlines():
                 if line[0] == '@':
-                    existing_refs.add(line.split('{')[1].split(',')[0].strip())
-     
-    missing_refs = all_cites - existing_refs
-    append_string = ""
-    added_refs = set()
-    with open(parent, 'r') as f:
+                    nicknames.add(line.split('{')[1].split(',')[0].strip())
+    return nicknames
+
+def bib_strip(parent_bib, entries):
+    """Strips a subset of entries from a BibTeX .bib file
+    
+    Parameters:
+    ----------
+    parent_bib : str
+        The parent .bib file
+    entries : set of strings
+        The BibTeX nicknakes of the entries to be stripped out
+
+    Returns:
+    --------
+    child_bib : str
+        The requested entries
+    added_entries : set
+        The BibTeX nicknames of the files that were successfully added.
+    missing_entries : set
+        BibTeX nicknames that were not found in parent_bib
+    """
+    added_entries = set()
+    child_bib = ""
+    with open(parent_bib, 'r') as f:
         line = f.readline()
         while line != "":
             if line.strip() != "" and line.strip()[0] == '@' \
-                and line.split('{')[1].split(',')[0].strip() in missing_refs:
-                ref = line.split('{')[1].split(',')[0].strip() 
-                missing_refs.remove(ref)
-                added_refs.add(ref)
-                append_string += line
+                and line.split('{')[1].split(',')[0].strip() in entries:
+                entry = line.split('{')[1].split(',')[0].strip() 
+                entries.remove(entry)
+                added_entries.add(entry)
+                child_bib += line
                 line = f.readline()
                 while line.strip() != "" and line.strip()[0] != '@':
                     if line.strip()[0] != '#':
-                        append_string += line
+                        child_bib += line
                     line = f.readline()
-                append_string += "\n"
+                child_bib += "\n"
             else:
                 line = f.readline()
+
+    missing_entries = entries # all entries not added
+    return child_bib, added_entries, missing_entries
+
+def make(project, parent):
+    cites = latex_cites(project)
+    local_refs = bib_nicknames(project + "/refs.bib")
+    required_refs = cites - local_refs
+    append_string, added_refs, missing_refs = bib_strip(parent, required_refs)
     
     with open("refs.bib", 'a') as f:
         f.write(append_string)
@@ -85,16 +140,22 @@ def status():
     for x in (refs - files):
         print(x)
 
+def grep(args):
+    print(" ".join(args))
+    system('find ~/refs/ -name "*.pdf" | xargs -I @ pdftotext @ - | grep {0}'. format(" ".join(args)))
+
 def main():
-   if len(sys.argv) < 2 or sys.argv[1] not in ('status', 'make'):
+   if len(sys.argv) < 2 or sys.argv[1] not in ('status', 'make', 'grep'):
        raise ValueError("'zo status' and 'zo make' are the only valid commands")
    if sys.argv[1] == 'status':
        status()
+   if sys.argv[1] == 'grep':
+       grep(sys.argv[2:])
    parent = path.join(getenv("HOME"), "refs", "refs.bib")
    if len(sys.argv) == 4 and sys.argv[2] in ("--parent", "-p"):
        parent = sys.argv[3]
    if sys.argv[1] == 'make':
-       make(parent)
+       make(".", parent)
 
 if __name__ == '__main__':
     main()
