@@ -100,6 +100,23 @@ def bib_strip(parent_bib, entries):
     missing_entries = entries # all entries not added
     return child_bib, added_entries, missing_entries
 
+def find_pdfs(dir):
+    files = set()
+    for root, dirnames, filenames in walk(dir):
+        for filename in fnmatch.filter(filenames, '*.pdf'):
+            files.add(filename.split(".")[0])
+
+    return(files)
+
+def _printer(things, msg):
+    out = ""
+    if len(things) > 0:
+        out += msg + "\n"
+        out += "="*len(msg) + "\n"
+        for i, thing in enumerate(things):
+            out += "{0}. {1}\n".format(i+1, thing)
+    return out
+
 def make(project, parent):
     cites = latex_cites(project)
     local_refs = bib_nicknames(project + "/refs.bib")
@@ -108,44 +125,24 @@ def make(project, parent):
     
     with open("refs.bib", 'a') as f:
         f.write(append_string)
-     
-    if len(added_refs) > 0:               
-        print("The following refs were added to the local refs.bib:")
-        print("="*68)
-        for i, ar in enumerate(added_refs):
-            print("{0}. {1}".format(i+1, ar))
-        if len(missing_refs) > 0:
-            print("")
-    if len(missing_refs) > 0:
-        print("Refs not in parent refs.bib and were NOT added to the local refs.bib:")
-        print("="*73)
-        for i, mr in enumerate(missing_refs):
-            print("{0}. {1}".format(i+1, mr))
+
+    out = _printer(added_refs, 
+                   "\nThe following refs were added to the local refs.bib:")
+    out += _printer(missing_refs, 
+                    "\nRefs not in parent and NOT added to the local refs.bib:")
+    print(out)
 
 def status():
-    files = set()
-    for root, dirnames, filenames in walk(path.join(getenv("HOME"), "refs")):
-        for filename in fnmatch.filter(filenames, '*.pdf'):
-            files.add(filename.split(".")[0])
-    
-    refs = set()
-    with open(path.join(getenv("HOME"), "refs", "refs.bib"), 'r') as f:
-        for line in f.readlines():
-            if line[0] == '@':
-                refs.add(line.split('{')[1].split(',')[0].strip())
-    
-    print("\nfiles that are good to go:\n==============================")
-    for x in (files & refs):
-        print(x)
-    print("\nfiles missing .bib entries:\n==============================")
-    for x in (files - refs):
-        print(x)
-    print("\n.bib entries missing files:\n==============================")
-    for x in (refs - files):
-        print(x)
+    files = find_pdfs(path.join(getenv("HOME"), "refs"))
+    refs = bib_nicknames(path.join(getenv("HOME"), "refs", "refs.bib"))
+    out = _printer(files & refs, "Files that are good to go:")
+    out += _printer(files - refs, "\nFiles missing .bib entries:")
+    out += _printer(refs - files, "\n.bib entries missing files:")
+    print(out)
 
 def grep(args):
     system('find ~/refs/ -name "*.pdf" | xargs -I @ pdftotext @ - | grep {0}'. format(" ".join(args)))
+
 
 def main():
    if len(sys.argv) < 2 or sys.argv[1] not in ('status', 'make', 'grep'):
