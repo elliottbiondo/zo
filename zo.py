@@ -141,16 +141,21 @@ def status():
     print(out)
 
 def grep(args):
-    system('find ~/refs/ -name "*.pdf" | xargs -I @ pdftotext @ - | grep {0}'. format(" ".join(args)))
+    system('find $HOME/refs/ -name "*.pdf" | xargs -I @ pdftotext @ - | grep {0}'. format(" ".join(args)))
+
+def vince(nickname):
+    system('evince $HOME/refs/{0}.pdf &>/dev/null &'. format(nickname))
 
 
 def main():
-   if len(sys.argv) < 2 or sys.argv[1] not in ('status', 'make', 'grep'):
+   if len(sys.argv) < 2 or sys.argv[1] not in ('status', 'make', 'grep', 'vince'):
        raise ValueError("'zo status' and 'zo make' are the only valid commands")
    if sys.argv[1] == 'status':
        status()
    if sys.argv[1] == 'grep':
        grep(sys.argv[2:])
+   if sys.argv[1] == 'vince':
+       vince(sys.argv[2])
    parent = path.join(getenv("HOME"), "refs", "refs.bib")
    if len(sys.argv) == 4 and sys.argv[2] in ("--parent", "-p"):
        parent = sys.argv[3]

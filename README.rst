@@ -4,12 +4,12 @@ Overview
 This is a barebones reference management system intended to be used in
 conjunction with a git repository containing a collection of .pdf files and
 corresponding BibTeX entries. I find Zotero/Mendeley/etc. to be too cumbersome.
-I have implemented all the capabilities I need in < 100 lines of Python.
+I have implemented all the capabilities I need in < 200 lines of Python.
 
 Motivation
 ----------
 
-I read and cite a lot of papers, and therefore I desire this process to be strealined. The capabilities I value are enumerated below:
+I read and cite a lot of papers, and therefore I desire this process to be streamlined. The capabilities I value are enumerated below:
 
 1. I want a single folder containing all my documents as .pdfs, so I can easily open them from the command line.
 2. I want choose the names for the .pdfs.
