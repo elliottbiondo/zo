@@ -117,13 +117,13 @@ def _printer(things, msg):
             out += "{0}. {1}\n".format(i+1, thing)
     return out
 
-def make(project, parent):
+def make(project, parent, child):
     cites = latex_cites(project)
-    local_refs = bib_nicknames(project + "/refs.bib")
+    local_refs = bib_nicknames(child)
     required_refs = cites - local_refs
     append_string, added_refs, missing_refs = bib_strip(parent, required_refs)
     
-    with open("refs.bib", 'a') as f:
+    with open(child, 'a') as f:
         f.write(append_string)
 
     out = _printer(added_refs, 
@@ -146,21 +146,34 @@ def grep(args):
 def vince(nickname):
     system('evince $HOME/refs/{0}.pdf &>/dev/null &'. format(nickname))
 
-
 def main():
-   if len(sys.argv) < 2 or sys.argv[1] not in ('status', 'make', 'grep', 'vince'):
-       raise ValueError("'zo status' and 'zo make' are the only valid commands")
-   if sys.argv[1] == 'status':
-       status()
-   if sys.argv[1] == 'grep':
-       grep(sys.argv[2:])
-   if sys.argv[1] == 'vince':
-       vince(sys.argv[2])
-   parent = path.join(getenv("HOME"), "refs", "refs.bib")
-   if len(sys.argv) == 4 and sys.argv[2] in ("--parent", "-p"):
-       parent = sys.argv[3]
-   if sys.argv[1] == 'make':
-       make(".", parent)
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers(help="Availible zo commands.", dest='command')
+
+    status_parser = subparsers.add_parser("status", help="Show what .pdfs and citations are availible or missing")
+    make_parser = subparsers.add_parser("make", help="Create a child .bib file containing only the needed refs within a project")
+    grep_parser = subparsers.add_parser("grep", help="Find the .pdf that contain a grep match")
+    vince_parser = subparsers.add_parser("vince", help="Open a .pdf")
+
+    make_parser.add_argument("-j", "--project", action='store', dest='project', 
+                             default=".", help="The directory contain the LaTeX project")
+    make_parser.add_argument("-p", "--parent", action='store', dest='parent', 
+                             default=path.join(getenv("HOME"), "refs", "refs.bib"), 
+                             help="A parent .bib file")
+    make_parser.add_argument("-c", "--child", action='store', dest='child', 
+                             default=path.join(".", "refs.bib"), 
+                             help="The child ref.bib file to be produced")
+    vince_parser.add_argument("nickname", action='store', help="Name of the .pdf file")
+
+    args, other = parser.parse_known_args()
+    if args.command == 'status':
+        status()
+    if args.command == 'make':
+        make(args.project, args.parent, args.child)
+    elif args.command == 'grep':
+        grep(other)
+    elif args.command == 'vince':
+        vince(args.nickname)
 
 if __name__ == '__main__':
     main()
