@@ -3,6 +3,7 @@ import fnmatch
 import sys
 import warnings
 import argparse
+import subprocess
 from os import walk, path, getenv, system
 
 def latex_cites(project):
@@ -140,8 +141,19 @@ def status():
     out += _printer(refs - files, "\n.bib entries missing files:")
     print(out)
 
-def grep(args):
-    system('find $HOME/refs/ -name "*.pdf" | xargs -I @ pdftotext @ - | grep {0}'. format(" ".join(args)))
+def grep(repo, args):
+    for root, dirnames, filenames in walk(repo):
+        for filename in fnmatch.filter(filenames, "*.pdf"):
+            full_path = path.join(root, filename)
+            ps = subprocess.Popen(("pdftotext", full_path, "-"), stdout=subprocess.PIPE)
+            grep_out = None
+            try:
+                grep_out = subprocess.check_output((["grep"] + args), stdin=ps.stdout)
+            except subprocess.CalledProcessError:
+                pass
+            ps.wait()
+            if grep_out:
+                print(full_path)
 
 def vince(nickname):
     system('evince $HOME/refs/{0}.pdf &>/dev/null &'. format(nickname))
@@ -171,7 +183,7 @@ def main():
     if args.command == 'make':
         make(args.project, args.parent, args.child)
     elif args.command == 'grep':
-        grep(other)
+        grep(path.join(getenv("HOME"), "refs"), other)
     elif args.command == 'vince':
         vince(args.nickname)
 
