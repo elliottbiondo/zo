@@ -114,7 +114,7 @@ def _printer(things, msg):
     if len(things) > 0:
         out += msg + "\n"
         out += "="*len(msg) + "\n"
-        for i, thing in enumerate(things):
+        for i, thing in enumerate(sorted(things)):
             out += "{0}. {1}\n".format(i+1, thing)
     return out
 
