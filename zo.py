@@ -37,7 +37,7 @@ def latex_cites(project):
           lines = "".join(line.strip() for line in f)
           for x in re.findall(citere, lines):
               if x[1]:
-                  cites.add(x[1].strip())
+                  cites |= set([x.strip() for x in x[1].split(',')])
               else:
                   warnings.warn("Empty citation encountered.", Warning)
     return cites
