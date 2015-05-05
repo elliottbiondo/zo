@@ -5,6 +5,11 @@ import warnings
 import argparse
 import subprocess
 from os import walk, path, getenv, system
+import re
+
+cites = ['cite', 'fullcite']
+citere = '({})'.format('|'.join(['\\\\' + x for x in cites])) + '\{(.*?)\}'
+citere = re.compile(citere)
 
 def latex_cites(project):
     """Finds the contents of every \cite command in a LaTeX project within
@@ -30,12 +35,11 @@ def latex_cites(project):
     for tex_file in tex_files:
        with open(tex_file, 'r') as f:
           lines = "".join(line.strip() for line in f)
-          for b in lines.split("\cite{")[1:]:
-              for c in b.split("}")[0].split(","):
-                  if c:
-                      cites.add(c.strip())
-                  else:
-                      warnings.warn("Empty citation encountered.", Warning)
+          for x in re.findall(citere, lines):
+              if x[1]:
+                  cites |= set([x.strip() for x in x[1].split(',')])
+              else:
+                  warnings.warn("Empty citation encountered.", Warning)
     return cites
 
 def bib_nicknames(bib):
